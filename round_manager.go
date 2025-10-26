@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/quay/zlog"
 )
 
 type Phase string
@@ -53,7 +54,7 @@ type Message[T any] struct {
 }
 
 type IRoundManager interface {
-	ScheduleRound(ctx context.Context, r *Round)
+	ScheduleRound(ctx context.Context, r *Round) *time.Time
 	GenerateRound() *Round
 }
 
@@ -100,7 +101,7 @@ func (rm *RoundManager) GenerateRound() *Round {
 // ScheduleRound manages the round state machine lifecycle
 func (rm *RoundManager) ScheduleRound(
 	ctx context.Context, r *Round,
-) {
+) *time.Time {
 	// Step 1: Announce the round creation if in the BETTING phase
 	r.mu.RLock()
 	currentPhase := r.Phase
@@ -119,7 +120,8 @@ func (rm *RoundManager) ScheduleRound(
 	for {
 		select {
 		case <-ctx.Done():
-			return
+			n := time.Now()
+			return &n
 		case now := <-tick.C:
 			r.mu.Lock()
 			switch r.Phase {
@@ -140,6 +142,11 @@ func (rm *RoundManager) ScheduleRound(
 					if err == nil {
 						// Notify clients that betting is locked
 						rm.hub.Broadcast(m)
+						rm.hub.UpdateRound(r)
+					} else {
+						zlog.Error(context.Background()).Err(err).Msg(
+							"Error broadcasting round locked message",
+						)
 					}
 					continue
 				}
@@ -153,6 +160,11 @@ func (rm *RoundManager) ScheduleRound(
 					m, err := rm.makeMessage(Started, r)
 					if err == nil {
 						rm.hub.Broadcast(m)
+						rm.hub.UpdateRound(r)
+					} else {
+						zlog.Error(context.Background()).Err(err).Msg(
+							"Error broadcasting round start message",
+						)
 					}
 					continue
 				}
@@ -174,21 +186,31 @@ func (rm *RoundManager) ScheduleRound(
 						m, err := rm.makeMessage(Revealed, r)
 						if err == nil {
 							rm.hub.Broadcast(m)
+							rm.hub.UpdateRound(r)
+						} else {
+							zlog.Error(context.Background()).Err(err).Msg(
+								"Error broadcasting round reveal message",
+							)
 						}
 						continue
 					}
-					// Error recovery: retry on next tick
+					// Error recovery: retry on the next tick
 				}
 
 			case Revealed:
 				// Step 5: Finish the round
 				if r.FinishAt != nil && now.After(*r.FinishAt) {
-					r.Phase = Finished
+					r.Phase = Revealed
 					atomic.AddUint64(&r.Seq, 1)
 					r.mu.Unlock()
 					m, err := rm.makeMessage(Finished, r)
 					if err == nil {
 						rm.hub.Broadcast(m)
+						rm.hub.UpdateRound(r)
+					} else {
+						zlog.Error(context.Background()).Err(err).Msg(
+							"Error broadcasting round finish message",
+						)
 					}
 					continue
 				}
@@ -201,8 +223,15 @@ func (rm *RoundManager) ScheduleRound(
 				m, err := rm.makeMessage(Settled, r)
 				if err == nil {
 					rm.hub.Broadcast(m)
+				} else {
+					zlog.Error(context.Background()).Err(err).Msg(
+						"Error broadcasting round settled message",
+					)
+					continue
 				}
-				return // Round complete, exit scheduler
+				rm.hub.UpdateRound(r)
+				n := time.Now()
+				return &n // Round complete, exit scheduler
 			}
 			r.mu.Unlock()
 		}

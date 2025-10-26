@@ -10,12 +10,15 @@ import (
 )
 
 type Hub struct {
-	mu    sync.RWMutex
-	conns map[*websocket.Conn]struct{}
+	mu           sync.RWMutex
+	conns        map[*websocket.Conn]struct{}
+	roundUpdated chan *Round
 }
 
 type IHub interface {
 	Broadcast(msg any)
+	GetRoundCh() chan *Round
+	UpdateRound(r *Round)
 }
 
 func (h *Hub) Broadcast(msg any) {
@@ -35,4 +38,12 @@ func (h *Hub) Broadcast(msg any) {
 			)
 		}
 	}
+}
+
+func (h *Hub) GetRoundCh() chan *Round {
+	return h.roundUpdated
+}
+
+func (h *Hub) UpdateRound(r *Round) {
+	h.roundUpdated <- r
 }
