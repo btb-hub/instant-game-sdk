@@ -12,8 +12,8 @@ func TestNewRNGManager_SeedFor_And_CommitFor_WithEnvSecret(t *testing.T) {
 	// Ensure env-based secret yields deterministic, known values
 	const secret = "test-secret"
 	const roundID = "round-42"
-	os.Setenv("RNG_SECRET", secret)
-	t.Cleanup(func() { os.Unsetenv("RNG_SECRET") })
+	_ = os.Setenv("RNG_SECRET", secret)
+	t.Cleanup(func() { _ = os.Unsetenv("RNG_SECRET") })
 
 	m := NewRNGManager()
 
@@ -43,7 +43,7 @@ func TestNewRNGManager_SeedFor_And_CommitFor_WithEnvSecret(t *testing.T) {
 }
 
 func TestNewRNGManager_NoEnvSecret_ProducesHexSeed(t *testing.T) {
-	os.Unsetenv("RNG_SECRET")
+	_ = os.Unsetenv("RNG_SECRET")
 	m := NewRNGManager()
 	seed := m.SeedFor("any-round")
 	if len(seed) != 64 {
@@ -55,8 +55,8 @@ func TestNewRNGManager_NoEnvSecret_ProducesHexSeed(t *testing.T) {
 }
 
 func TestPickWinnerIndex_RangeAndDeterminism(t *testing.T) {
-	os.Setenv("RNG_SECRET", "deterministic-key")
-	t.Cleanup(func() { os.Unsetenv("RNG_SECRET") })
+	_ = os.Setenv("RNG_SECRET", "deterministic-key")
+	t.Cleanup(func() { _ = os.Unsetenv("RNG_SECRET") })
 	m := NewRNGManager()
 	r := &Round{ID: "r42"}
 	seed := m.SeedFor(r.ID)

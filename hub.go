@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"sync"
 
 	"github.com/gorilla/websocket"
+	"github.com/quay/zlog"
 )
 
 type Hub struct {
@@ -21,6 +23,16 @@ func (h *Hub) Broadcast(msg any) {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
 	for c := range h.conns {
-		c.WriteMessage(websocket.TextMessage, b)
+		err := c.WriteMessage(websocket.TextMessage, b)
+		if err != nil {
+			zlog.Error(context.Background()).Err(err).Msgf(
+				"Error writing message to websocket: %s",
+				c.RemoteAddr().String(),
+			)
+			delete(h.conns, c)
+			zlog.Info(context.Background()).Msg(
+				"Websocket connection closed",
+			)
+		}
 	}
 }

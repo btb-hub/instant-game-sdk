@@ -40,7 +40,7 @@ func TestScheduleRound_FullLifecycle(t *testing.T) {
 		time.Sleep(20 * time.Millisecond)
 	}
 
-	// Read final state with proper locking
+	// Read the final state with proper locking
 	r.mu.RLock()
 	finalPhase := r.Phase
 	finalSeed := r.Seed
@@ -71,14 +71,16 @@ func TestScheduleRound_BroadcastCallbacks(t *testing.T) {
 
 	// Capture all broadcasts
 	var broadcasts [][]byte
-	mockHub.On("Broadcast", mock.Anything).Run(func(args mock.Arguments) {
-		msg := args.Get(0)
-		if msgBytes, ok := msg.(*[]byte); ok {
-			bytes := make([]byte, len(*msgBytes))
-			copy(bytes, *msgBytes)
-			broadcasts = append(broadcasts, bytes)
-		}
-	}).Return()
+	mockHub.On("Broadcast", mock.Anything).Run(
+		func(args mock.Arguments) {
+			msg := args.Get(0)
+			if msgBytes, ok := msg.(*[]byte); ok {
+				bytes := make([]byte, len(*msgBytes))
+				copy(bytes, *msgBytes)
+				broadcasts = append(broadcasts, bytes)
+			}
+		},
+	).Return()
 
 	// short timings
 	rm := NewRaceManager(mockHub, 10*time.Millisecond, 20*time.Millisecond)
@@ -164,14 +166,16 @@ func TestScheduleRound_BroadcastCallbacks(t *testing.T) {
 		// verify seq is present and incrementing
 		if i > 0 {
 			var prevMsg Message[any]
-			json.Unmarshal(broadcasts[i-1], &prevMsg)
+			_ = json.Unmarshal(broadcasts[i-1], &prevMsg)
 			if prevMsg.Data != nil {
 				prevDataMap, _ := prevMsg.Data.(map[string]any)
 				currentSeq, _ := dataMap["seq"].(float64)
 				prevSeq, _ := prevDataMap["seq"].(float64)
 				if currentSeq <= prevSeq {
-					t.Errorf("seq not incrementing: broadcast[%d].Seq=%.0f, broadcast[%d].Seq=%.0f",
-						i-1, prevSeq, i, currentSeq)
+					t.Errorf(
+						"seq not incrementing: broadcast[%d].Seq=%.0f, broadcast[%d].Seq=%.0f",
+						i-1, prevSeq, i, currentSeq,
+					)
 				}
 			}
 		}
