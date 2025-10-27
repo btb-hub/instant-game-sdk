@@ -58,16 +58,16 @@ type IRoundManager interface {
 	GenerateRound() *Round
 }
 
-// NewRaceManager creates a new RoundManager with configurable timings
+// NewRoundManager creates a new RoundManager with configurable timings
 // revealTime: duration from STARTED to REVEALED (step 4)
 // duration: total duration from STARTED to FINISHED
 // bettingDuration: how long users have to place bets (step 2, default 30s if 0)
-func NewRaceManager(hub IHub, revealTime, duration time.Duration) IRoundManager {
-	return NewRaceManagerWithConfig(hub, NewRNGManager(), revealTime, duration, 30*time.Second, 250*time.Millisecond)
+func NewRoundManager(hub IHub, revealTime, duration time.Duration) IRoundManager {
+	return NewRoundManagerWithConfig(hub, NewRNGManager(), revealTime, duration, 30*time.Second, 250*time.Millisecond)
 }
 
-// NewRaceManagerWithConfig creates a RoundManager with full configuration
-func NewRaceManagerWithConfig(
+// NewRoundManagerWithConfig creates a RoundManager with full configuration
+func NewRoundManagerWithConfig(
 	hub IHub, rng IRNGManager, revealTime, duration, bettingDuration, startDelay time.Duration,
 ) IRoundManager {
 	if bettingDuration == 0 {

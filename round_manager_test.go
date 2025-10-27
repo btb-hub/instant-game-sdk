@@ -20,7 +20,7 @@ func TestScheduleRound_FullLifecycle(t *testing.T) {
 	mockHub.On("UpdateRound", mock.Anything).Return()
 
 	// short timings; reveal and finish will be scheduled relative to ServerStartAt (now+250ms)
-	rm := NewRaceManager(mockHub, 10*time.Millisecond, 20*time.Millisecond)
+	rm := NewRoundManager(mockHub, 10*time.Millisecond, 20*time.Millisecond)
 
 	r := &Round{
 		ID:             "r-test",
@@ -105,7 +105,7 @@ func TestScheduleRound_BroadcastCallbacks(t *testing.T) {
 	mockHub.On("UpdateRound", mock.Anything).Return().Maybe()
 
 	// short timings
-	rm := NewRaceManager(mockHub, 10*time.Millisecond, 20*time.Millisecond)
+	rm := NewRoundManager(mockHub, 10*time.Millisecond, 20*time.Millisecond)
 
 	r := &Round{
 		ID:             "r-broadcast-test",
@@ -222,7 +222,7 @@ func TestScheduleRound_ContextCancellation(t *testing.T) {
 	// UpdateRound may be called 0-2 times before cancellation
 	mockHub.On("UpdateRound", mock.Anything).Return().Maybe()
 
-	rm := NewRaceManager(mockHub, 100*time.Millisecond, 200*time.Millisecond)
+	rm := NewRoundManager(mockHub, 100*time.Millisecond, 200*time.Millisecond)
 
 	r := &Round{
 		ID:             "r-cancel-test",
@@ -282,7 +282,7 @@ func TestScheduleRound_UpdateRoundCalls(t *testing.T) {
 		},
 	).Return()
 
-	rm := NewRaceManager(mockHub, 10*time.Millisecond, 20*time.Millisecond)
+	rm := NewRoundManager(mockHub, 10*time.Millisecond, 20*time.Millisecond)
 
 	r := &Round{
 		ID:             "r-update-test",
@@ -335,7 +335,7 @@ func TestNewRaceManagerWithConfig_Defaults(t *testing.T) {
 	mockHub := NewMockIHub(t)
 
 	// Test zero betting duration defaults to 30s
-	rm := NewRaceManagerWithConfig(mockHub, NewRNGManager(), 5*time.Second, 10*time.Second, 0, 0).(*RoundManager)
+	rm := NewRoundManagerWithConfig(mockHub, NewRNGManager(), 5*time.Second, 10*time.Second, 0, 0).(*RoundManager)
 	if rm.bettingDuration != 30*time.Second {
 		t.Errorf("expected bettingDuration 30s, got %v", rm.bettingDuration)
 	}
@@ -344,7 +344,7 @@ func TestNewRaceManagerWithConfig_Defaults(t *testing.T) {
 	}
 
 	// Test non-zero values are preserved
-	rm2 := NewRaceManagerWithConfig(
+	rm2 := NewRoundManagerWithConfig(
 		mockHub, NewRNGManager(), 5*time.Second, 10*time.Second, 60*time.Second, 500*time.Millisecond,
 	).(*RoundManager)
 	if rm2.bettingDuration != 60*time.Second {
@@ -357,7 +357,7 @@ func TestNewRaceManagerWithConfig_Defaults(t *testing.T) {
 
 func TestGenerateRound_UniqueIDs(t *testing.T) {
 	mockHub := NewMockIHub(t)
-	rm := NewRaceManager(mockHub, 5*time.Second, 10*time.Second)
+	rm := NewRoundManager(mockHub, 5*time.Second, 10*time.Second)
 
 	// Generate multiple rounds
 	rounds := make([]*Round, 5)
@@ -402,7 +402,7 @@ func TestScheduleRound_RNGErrorRetry(t *testing.T) {
 		},
 	).Return(0, nil).Maybe()
 
-	rm := NewRaceManagerWithConfig(
+	rm := NewRoundManagerWithConfig(
 		mockHub, mockRNG, 10*time.Millisecond, 20*time.Millisecond, 30*time.Second, 250*time.Millisecond,
 	)
 
@@ -442,7 +442,7 @@ func TestScheduleRound_ReturnValue(t *testing.T) {
 	mockHub.On("Broadcast", mock.Anything).Return()
 	mockHub.On("UpdateRound", mock.Anything).Return().Maybe()
 
-	rm := NewRaceManager(mockHub, 10*time.Millisecond, 20*time.Millisecond)
+	rm := NewRoundManager(mockHub, 10*time.Millisecond, 20*time.Millisecond)
 
 	r := &Round{
 		ID:             "r-return-test",
