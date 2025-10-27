@@ -23,7 +23,7 @@ type IHub interface {
 	Unregister(c *websocket.Conn)
 }
 
-func NewHub() *Hub {
+func NewHub() IHub {
 	return &Hub{
 		conns:        make(map[*websocket.Conn]struct{}),
 		roundUpdated: make(chan *Round),
