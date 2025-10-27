@@ -19,6 +19,8 @@ type IHub interface {
 	Broadcast(msg any)
 	GetRoundCh() chan *Round
 	UpdateRound(r *Round)
+	Register(c *websocket.Conn)
+	Unregister(c *websocket.Conn)
 }
 
 func (h *Hub) Broadcast(msg any) {
@@ -46,4 +48,16 @@ func (h *Hub) GetRoundCh() chan *Round {
 
 func (h *Hub) UpdateRound(r *Round) {
 	h.roundUpdated <- r
+}
+
+func (h *Hub) Register(c *websocket.Conn) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.conns[c] = struct{}{}
+}
+
+func (h *Hub) Unregister(c *websocket.Conn) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	delete(h.conns, c)
 }
