@@ -23,6 +23,13 @@ type IHub interface {
 	Unregister(c *websocket.Conn)
 }
 
+func NewHub() *Hub {
+	return &Hub{
+		conns:        make(map[*websocket.Conn]struct{}),
+		roundUpdated: make(chan *Round),
+	}
+}
+
 func (h *Hub) Broadcast(msg any) {
 	b, _ := json.Marshal(msg)
 	h.mu.RLock()
