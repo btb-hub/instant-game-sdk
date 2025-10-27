@@ -1,4 +1,4 @@
-package main
+package instantgame
 
 import (
 	"crypto/hmac"

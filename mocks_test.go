@@ -2,12 +2,13 @@
 // github.com/vektra/mockery
 // template: testify
 
-package main
+package instantgame
 
 import (
 	"context"
 	"time"
 
+	"github.com/gorilla/websocket"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -121,6 +122,86 @@ func (_c *MockIHub_GetRoundCh_Call) Return(roundCh chan *Round) *MockIHub_GetRou
 
 func (_c *MockIHub_GetRoundCh_Call) RunAndReturn(run func() chan *Round) *MockIHub_GetRoundCh_Call {
 	_c.Call.Return(run)
+	return _c
+}
+
+// Register provides a mock function for the type MockIHub
+func (_mock *MockIHub) Register(c *websocket.Conn) {
+	_mock.Called(c)
+	return
+}
+
+// MockIHub_Register_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Register'
+type MockIHub_Register_Call struct {
+	*mock.Call
+}
+
+// Register is a helper method to define mock.On call
+//   - c *websocket.Conn
+func (_e *MockIHub_Expecter) Register(c interface{}) *MockIHub_Register_Call {
+	return &MockIHub_Register_Call{Call: _e.mock.On("Register", c)}
+}
+
+func (_c *MockIHub_Register_Call) Run(run func(c *websocket.Conn)) *MockIHub_Register_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 *websocket.Conn
+		if args[0] != nil {
+			arg0 = args[0].(*websocket.Conn)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockIHub_Register_Call) Return() *MockIHub_Register_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *MockIHub_Register_Call) RunAndReturn(run func(c *websocket.Conn)) *MockIHub_Register_Call {
+	_c.Run(run)
+	return _c
+}
+
+// Unregister provides a mock function for the type MockIHub
+func (_mock *MockIHub) Unregister(c *websocket.Conn) {
+	_mock.Called(c)
+	return
+}
+
+// MockIHub_Unregister_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Unregister'
+type MockIHub_Unregister_Call struct {
+	*mock.Call
+}
+
+// Unregister is a helper method to define mock.On call
+//   - c *websocket.Conn
+func (_e *MockIHub_Expecter) Unregister(c interface{}) *MockIHub_Unregister_Call {
+	return &MockIHub_Unregister_Call{Call: _e.mock.On("Unregister", c)}
+}
+
+func (_c *MockIHub_Unregister_Call) Run(run func(c *websocket.Conn)) *MockIHub_Unregister_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 *websocket.Conn
+		if args[0] != nil {
+			arg0 = args[0].(*websocket.Conn)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockIHub_Unregister_Call) Return() *MockIHub_Unregister_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *MockIHub_Unregister_Call) RunAndReturn(run func(c *websocket.Conn)) *MockIHub_Unregister_Call {
+	_c.Run(run)
 	return _c
 }
 
